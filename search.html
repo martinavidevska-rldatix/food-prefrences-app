@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Search Person</title>
+  <style>
+    body { font-family: Arial; padding: 2rem; }
+    .person { margin-top: 1rem; padding: 1rem; border: 1px solid #ccc; border-radius: 8px; }
+    .fruits { margin-top: 0.5rem; color: green; }
+  </style>
+</head>
+<body>
+  <h1>Search for a Person</h1>
+
+  <form id="searchForm">
+    <label for="firstName">First Name:</label>
+    <input type="text" id="firstName" required>
+    <button type="submit">Search</button>
+  </form>
+
+  <div id="results"></div>
+
+  <script>
+    const form = document.getElementById('searchForm');
+    const resultsDiv = document.getElementById('results');
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const name = document.getElementById('firstName').value.trim();
+      if (!name) return;
+
+      resultsDiv.innerHTML = 'Searching...';
+
+      try {
+        const res = await fetch(`/api/search?param=${encodeURIComponent(name)}`);
+        if (!res.ok) throw new Error('Not found');
+        const people = await res.json();
+
+        if (people.length === 0) {
+          resultsDiv.innerHTML = `<p>No people found with that name.</p>`;
+          return;
+        }
+
+        resultsDiv.innerHTML = '';
+        people.forEach(p => {
+          const div = document.createElement('div');
+          div.classList.add('person');
+          div.innerHTML = `
+            <strong>${p.firstName} ${p.lastName}</strong><br>
+            ID: ${p.id}
+            <div class="fruits">
+              Favorite Fruits: ${p.preferredFruits?.map(f => f.name).join(', ') || 'None'}
+            </div>
+          `;
+          resultsDiv.appendChild(div);
+        });
+
+      } catch (err) {
+        resultsDiv.innerHTML = `<p>Error: ${err.message}</p>`;
+      }
+    });
+  </script>
+</body>
+</html>

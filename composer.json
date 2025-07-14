@@ -1,0 +1,25 @@
+{
+    "require": {
+        "symfony/cache": "^7.3",
+        "symfony/redis-messenger": "^5.4",
+        "doctrine/annotations": "^2.0",
+        "slim/slim": "^4.0",
+        "slim/psr7": "^1.7",
+        "php-di/php-di": "^7.0",
+        "predis/predis": "^3.0"
+    },
+    "autoload": {
+    "psr-4": {
+        "bootstrap\\": "bootstrap/",
+        "src\\": "src/",
+        "cache\\": "cache/"  
+
+    }
+
+  },
+    "require-dev": {
+        "doctrine/orm": "^3.5",
+        "doctrine/dbal": "^4.3",
+        "symfony/console": "^7.3"
+    }
+}

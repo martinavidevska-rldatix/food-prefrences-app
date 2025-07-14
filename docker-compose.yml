@@ -1,0 +1,81 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: php-food-app
+    volumes:
+      - ./:/var/www/html
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+      - redis
+      - rabbitmq
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - MESSENGER_TRANSPORT_DSN=redis://redis:6379/messages
+      - DATABASE_URL=mysql://user:secret@db:3306/mydatabase
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: php-worker
+    depends_on:
+      - redis
+      - rabbitmq
+      - db
+    command: php bin/console messenger:consume async -vv
+    volumes:
+      - ./:/var/www/html
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - MESSENGER_TRANSPORT_DSN=redis://redis:6379/messages
+      - DATABASE_URL=mysql://user:secret@db:3306/mydatabase
+
+  db:
+    image: mysql:8.0
+    container_name: php83-mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: mydatabase
+      MYSQL_USER: user
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: php83-phpmyadmin
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: root
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"      # For backend communication
+      - "15672:15672"    # RabbitMQ management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+volumes:
+  db_data:
