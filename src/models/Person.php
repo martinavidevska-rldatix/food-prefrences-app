@@ -1,4 +1,5 @@
 <?php
+
 namespace src\models;
 
 use Collator;
@@ -7,7 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use src\models\Fruit;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: \src\repository\PersonRepository::class)]
 #[ORM\Table(name: 'people')]
 class Person
 {
@@ -22,8 +23,9 @@ class Person
     #[ORM\Column(name: 'lastName', type: 'string')]
     private string $lastName;
 
-      #[ORM\ManyToMany(targetEntity: Fruit::class)]
-    #[ORM\JoinTable(name: "people_fruits",
+    #[ORM\ManyToMany(targetEntity: Fruit::class)]
+    #[ORM\JoinTable(
+        name: "people_fruits",
         joinColumns: [new ORM\JoinColumn(name: "person_id", referencedColumnName: "id")],
         inverseJoinColumns: [new ORM\JoinColumn(name: "fruit_id", referencedColumnName: "id")]
     )]
@@ -34,12 +36,28 @@ class Person
         $this->preferredFruits = new ArrayCollection();
     }
 
-    // Getters and setters
-    public function getId(): int { return $this->id; }
-    public function getFirstName(): string { return $this->firstName; }
-    public function getLastName(): string { return $this->lastName; }
+    public function getId(): int
+    {
+        return $this->id;
+    }
+    public function getFirstName(): string
+    {
+        return $this->firstName;
+    }
+    public function getLastName(): string
+    {
+        return $this->lastName;
+    }
+    public function setFirstName(string $firstName): void
+    {
+        $this->firstName = $firstName;
+    }
+    public function setLastName(string $lastName): void
+    {
+        $this->lastName = $lastName;
+    }
 
-    public function getPreferredFruits():Collection 
+    public function getPreferredFruits(): Collection
     {
         return $this->preferredFruits;
     }
@@ -49,5 +67,4 @@ class Person
             $this->preferredFruits->add($fruit);
         }
     }
-
 }

@@ -8,6 +8,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use src\controllers\PersonController;
 use src\controllers\FruitController;
+use reports\ReportPublisher;
 
 require __DIR__ . '/vendor/autoload.php';
 
@@ -44,7 +45,16 @@ $app->get('/api/people/{id}', function (Request $request, Response $response, ar
 $app->post('/api/people', function (Request $request, Response $response) use ($container) {
     return $container->get(PersonController::class)->create($request, $response);
 });
+//update a person
+$app->put('/api/people/{id}', function (Request $request, Response $response, array $args) use ($container){
+    $id = (int) $args['id'];
+    return $container->get(PersonController::class)->update($request,$response, $id);
+});
 
+$app->delete('/api/people/{id}', function(Request $request, Response $response, array $args) use($container){
+    $id = (int) $args['id'];
+    return $container->get(PersonController::class)->delete($request,$response, $id);
+});
 // Add a preferred fruit to a person
 $app->post('/api/people/{id}/fruit', function (Request $request, Response $response, array $args) use ($container) {
     $id = (int) $args['id'];
@@ -66,7 +76,55 @@ $app->get('/api/people-fruits', function (Request $request, Response $response) 
     return $container->get(PersonController::class)->listWithFruits($request, $response);
 });
 
+$app->post('/report/generate', function (Request $request, Response $response) {
+    $reportId =uniqid('report_', true);
 
+    $publisher = new ReportPublisher();
+    $publisher->publish($reportId);
+
+    $data = json_encode(['report_id' => $reportId]);
+
+    $response->getBody()->write($data);
+    return $response->withHeader('Content-Type', 'application/json');
+});
+$app->post('/report/generate1', function (Request $request, Response $response) {
+    $reportId =uniqid('report_', true);
+
+    $publisher = new ReportPublisher();
+    $publisher->publish($reportId);
+
+    $data = json_encode(['report_id' => $reportId]);
+
+    $response->getBody()->write($data);
+    return $response->withHeader('Content-Type', 'application/json');
+});
+
+
+//Check report status
+$app->get('/report/status', function (Request $request, Response $response) {
+    $reportId = $request->getQueryParams()['report_id'] ?? '';
+    $isReady = file_exists(__DIR__ . "/reports/generatedReports/{$reportId}.csv");
+
+    $response->getBody()->write(json_encode(['ready' => $isReady]));
+    return $response->withHeader('Content-Type', 'application/json');
+});
+
+// Download report
+$app->get('/report/download/{id}', function (Request $request, Response $response, array $args) {
+    $reportId = $args['id'];
+    $filePath = __DIR__ . "/reports/generatedReports/{$reportId}.csv";
+
+    if (!file_exists($filePath)) {
+        $response->getBody()->write('Report not found.');
+        return $response->withStatus(404);
+    }
+
+    $stream = new \Slim\Psr7\Stream(fopen($filePath, 'rb'));
+    return $response
+        ->withBody($stream)
+        ->withHeader('Content-Type', 'text/csv')
+        ->withHeader('Content-Disposition', "attachment; filename=\"{$reportId}.csv\"");
+});
 
 // // === Run App ===
 $app->run();

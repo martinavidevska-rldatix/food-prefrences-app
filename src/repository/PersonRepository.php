@@ -3,18 +3,21 @@
 namespace src\repository;
 use Doctrine\ORM\EntityRepository;
 use src\models\Person; 
+use Doctrine\ORM\EntityManager;
+
 
 /**
  * @extends EntityRepository<Person>
  */ 
 class PersonRepository extends EntityRepository{
 
-     public function findByName(string $name): array
+     public function findByFirstName(string $name): array
     {
         return $this->createQueryBuilder('p')
-            ->where('p.name LIKE :name')
-            ->setParameter('name', '%' . $name . '%')
+            ->where('LOWER(p.firstName) LIKE :name')
+            ->setParameter('name', '%' . strtolower($name) . '%')
             ->getQuery()
             ->getResult();
+
     }
 }

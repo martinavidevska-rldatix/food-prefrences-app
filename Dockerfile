@@ -22,5 +22,9 @@ RUN apt-get update && apt-get install -y \
 # Update CA certs
 RUN update-ca-certificates
 
+RUN docker-php-ext-install bcmath
+ 
+RUN docker-php-ext-install sockets
+
 # Install Composer globally
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer

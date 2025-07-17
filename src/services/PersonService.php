@@ -5,21 +5,25 @@ use Doctrine\ORM\EntityManager;
 use src\models\Person;
 use src\models\Fruit;
 use src\cache\IPersonCache;
+use src\repository\PersonRepository;
 
 class PersonService
 {
     private EntityManager $em;
     private IPersonCache $personCache;
+    private PersonRepository $personRepository;
 
     public function __construct(EntityManager $em, IPersonCache $personCache)
     {
         $this->em = $em;
-         $this->personCache = $personCache;
+        $this->personCache = $personCache;
+        $this->personRepository = $em->getRepository(Person::class);
+
     }
+    /** @return Person[] */
     public function getAllPeople(): array
     {
-        $people = $this->em->getRepository(Person::class)->findAll();
-
+        $people= $this->personRepository->findAll();
         return array_map(function (Person $person) {
             return [
                 'id' => $person->getId(),
@@ -35,7 +39,7 @@ class PersonService
 
     public function findPerson(int $id): ?array
     {
-        $person = $this->em->find(Person::class, $id);
+        $person = $this->personRepository->find($id);
         if (!$person) return null;
 
         return [
@@ -73,6 +77,40 @@ class PersonService
         ];
     }
 
+    public function deletePerson(int $id): void
+    {
+        $person = $this->personRepository->find($id);
+
+        if (!$person) {
+            throw new \Exception("Person not found with ID $id");
+        }
+
+        $this->em->remove($person);
+        $this->em->flush();
+    }
+
+    public function updatePerson(int $id, Person $updatedPerson): array
+    {
+        $person = $this->personRepository->find($id);
+
+        if (!$person) {
+            throw new \Exception("Person not found with ID $id");
+        }
+
+        $person->setFirstName($updatedPerson->getFirstName());
+        $person->setLastName($updatedPerson->getLastName());
+
+        $this->em->persist($person);
+        $this->em->flush();
+
+        return [
+            'id' => $person->getId(),
+            'firstName' => $person->getFirstName(),
+            'lastName' => $person->getLastName()
+        ];
+    }
+
+
     public function addPreferredFruit(int $personId, int $fruitId): void
         {
             $person = $this->em->getRepository(Person::class)->find($personId);
@@ -89,7 +127,7 @@ class PersonService
 
     public function getAllPeopleWithFruits(): array
     {
-        $people = $this->em->getRepository(Person::class)->findAll();
+        $people = $this->personRepository->findAll();
 
         return array_map(function (Person $person) {
             return [
@@ -122,13 +160,8 @@ class PersonService
         error_log("❌ Cache miss for: $cacheKey — querying DB.");
 
         $repository = $this->em->getRepository(Person::class);
-        $query = $repository->createQueryBuilder('p')
-            ->where('LOWER(p.firstName) LIKE :name')
-            ->setParameter('name', '%' . strtolower($name) . '%')
-            ->getQuery();
-
-        $people = $query->getResult();
-
+        $people = $this->personRepository->findByFirstName($name);
+         
         $results = array_map(function ($person) {
             return [
                 'id' => $person->getId(),

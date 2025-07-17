@@ -3,11 +3,9 @@
 namespace src\models;
 
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-use src\models\Person;
+use src\repository\FruitRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: FruitRepository::class)]
 #[ORM\Table(name: 'fruits')]
 class Fruit
 {

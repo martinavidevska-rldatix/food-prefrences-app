@@ -6,6 +6,7 @@ use src\services\PersonService;
 use src\services\FruitService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use src\models\Person;
 
 class PersonController
 {
@@ -46,6 +47,39 @@ class PersonController
         }
         $newPerson = $this->personService->createPerson($data['firstName'], $data['lastName']);
         return $this->jsonResponse($response, $newPerson, 201);
+    }
+    
+    public function update(Request $request, Response $response, int $id): Response
+    {
+        $data = $request->getParsedBody();
+
+         if ($data === null) {
+            $raw = (string) $request->getBody();
+            error_log("RAW: " . $raw);
+            $data = json_decode($raw, true);
+        }
+
+        $updatedPerson = new Person();
+        $refl = new \ReflectionClass($updatedPerson);
+        $refl->getProperty('firstName')->setValue($updatedPerson, $data['firstName']);
+        $refl->getProperty('lastName')->setValue($updatedPerson, $data['lastName']);
+
+        try {
+            $result = $this->personService->updatePerson($id, $updatedPerson);
+            return $this->jsonResponse($response, $result);
+        } catch (\Exception $e) {
+            return $this->jsonResponse($response, ['error' => $e->getMessage()], 404);
+        }
+    }
+
+    public function delete(Request $request, Response $response, int $id): Response
+    {
+        try {
+            $this->personService->deletePerson($id);
+            return $this->jsonResponse($response, ['message' => 'Person deleted']);
+        } catch (\Exception $e) {
+            return $this->jsonResponse($response, ['error' => $e->getMessage()], 404);
+        }
     }
 
     public function addFruit(Request $request, Response $response, int $personId): Response
