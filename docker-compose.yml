@@ -6,6 +6,7 @@ services:
     container_name: php-food-app
     volumes:
       - ./:/var/www/html
+      - ./tmp/xdebug:/tmp/xdebug
     ports:
       - "8080:80"
     depends_on:

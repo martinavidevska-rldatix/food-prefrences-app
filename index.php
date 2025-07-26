@@ -28,7 +28,7 @@ $app->addErrorMiddleware(true, true, true);
 // === Routes ===
 
 $app->get('/api/search', function (Request $request, Response $response) use ($container) {
-    return $container->get(\src\controllers\PersonController::class)->search($request, $response);
+    return $container->get(PersonController::class)->search($request, $response);
 });
 // List all people
 $app->get('/api/people', function (Request $request, Response $response) use ($container) {
@@ -125,6 +125,12 @@ $app->get('/report/download/{id}', function (Request $request, Response $respons
         ->withHeader('Content-Type', 'text/csv')
         ->withHeader('Content-Disposition', "attachment; filename=\"{$reportId}.csv\"");
 });
+$app->get('/', function (Request $request, Response $response) {
+    $html = file_get_contents(__DIR__ . '/start.php');
+    $response->getBody()->write($html);
+    return $response->withHeader('Content-Type', 'text/html');
+});
+
 
 // // === Run App ===
 $app->run();

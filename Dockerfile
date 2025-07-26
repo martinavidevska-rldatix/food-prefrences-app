@@ -16,8 +16,10 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     zip \
     && docker-php-ext-install pdo pdo_mysql \
-    && pecl install redis xdebug \
-    && docker-php-ext-enable redis xdebug
+    && pecl install xdebug \
+    && docker-php-ext-enable xdebug
+
+COPY xdebug.ini /usr/local/etc/php/conf.d/
 
 # Update CA certs
 RUN update-ca-certificates

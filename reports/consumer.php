@@ -32,7 +32,7 @@ try {
             ]);
 
             $reportDir = __DIR__ . '/../reports';
-            $generator = new ReportGenerator($pdo, $reportDir);
+            $generator = new ReportGenerator($pdo);
             $path = $generator->generateReport($reportId);
 
             echo "[✓] Report saved: $path\n";
