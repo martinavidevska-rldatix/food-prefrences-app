@@ -21,6 +21,8 @@ $container = new Container();
 AppFactory::setContainer($container);
 $app = AppFactory::create();
 
+$app->addBodyParsingMiddleware();
+
 // === Add Error Middleware (Dev Mode) ===
 $app->addErrorMiddleware(true, true, true);
 

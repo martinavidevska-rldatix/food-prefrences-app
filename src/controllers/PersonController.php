@@ -10,10 +10,7 @@ use src\models\Person;
 
 class PersonController
 {
-    public function __construct(
-        private PersonService $personService,
-        private FruitService  $fruitService
-    )
+    public function __construct(private PersonService $personService)
     {
     }
 
@@ -25,19 +22,13 @@ class PersonController
 
     public function getPersonByIdWithFruits(Response $response, int $id): Response
     {
-       $data = $this->personService->getPersonWithFruits($id);
-
+        $data = $this->personService->getPersonWithFruits($id);
         return $this->jsonResponse($response, $data);
     }
 
     public function create(Request $request, Response $response): Response
     {
         $data = $request->getParsedBody();
-        if ($data === null) {
-            $raw = (string)$request->getBody();
-            error_log("RAW: " . $raw);
-            $data = json_decode($raw, true);
-        }
         $personDTO = $this->personService->createPerson($data['firstName'], $data['lastName']);
         $response->getBody()->write(json_encode($personDTO->toArray()));
         return $response
@@ -48,13 +39,6 @@ class PersonController
     public function update(Request $request, Response $response, int $id): Response
     {
         $data = $request->getParsedBody();
-
-        if ($data === null) {
-            $raw = (string)$request->getBody();
-            error_log("RAW: " . $raw);
-            $data = json_decode($raw, true);
-        }
-
         try {
             $result = $this->personService->updatePerson($id, $data);
             return $this->jsonResponse($response, $result);
@@ -76,12 +60,6 @@ class PersonController
     public function addFruit(Request $request, Response $response, int $personId): Response
     {
         $data = $request->getParsedBody();
-        if ($data == null) {
-            $raw = (string)$request->getBody();
-            error_log("RAW: " . $raw);
-            $data = json_decode($raw, true);
-        }
-
         $this->personService->addPreferredFruit($personId, (int)$data['fruit_id']);
         return $this->jsonResponse($response, ['message' => 'Fruit added']);
     }
