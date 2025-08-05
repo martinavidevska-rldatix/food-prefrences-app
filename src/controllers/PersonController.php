@@ -12,60 +12,51 @@ class PersonController
 {
     public function __construct(
         private PersonService $personService,
-        private FruitService $fruitService
-    ) {}
+        private FruitService  $fruitService
+    )
+    {
+    }
 
-    public function list(Request $request, Response $response): Response
+    public function list(Response $response): Response
     {
         $people = $this->personService->getAllPeople();
         return $this->jsonResponse($response, $people);
     }
 
-    public function show(Request $request, Response $response, int $id): Response
+    public function getPersonByIdWithFruits(Response $response, int $id): Response
     {
-        $person = $this->personService->findPerson($id);
-        if (!$person) {
-            return $this->jsonResponse($response, ['error' => 'Person not found'], 404);
-        }
-
-        $preferredFruits = $this->personService->getPreferredFruits($id);
-        $data = [
-            'person' => $person,
-            'preferred_fruits' => $preferredFruits
-        ];
+       $data = $this->personService->getPersonWithFruits($id);
 
         return $this->jsonResponse($response, $data);
     }
 
     public function create(Request $request, Response $response): Response
     {
-            $data = $request->getParsedBody();
+        $data = $request->getParsedBody();
         if ($data === null) {
-            $raw = (string) $request->getBody();
+            $raw = (string)$request->getBody();
             error_log("RAW: " . $raw);
             $data = json_decode($raw, true);
         }
-        $newPerson = $this->personService->createPerson($data['firstName'], $data['lastName']);
-        return $this->jsonResponse($response, $newPerson, 201);
+        $personDTO = $this->personService->createPerson($data['firstName'], $data['lastName']);
+        $response->getBody()->write(json_encode($personDTO->toArray()));
+        return $response
+            ->withHeader('Content-Type', 'application/json')
+            ->withStatus(201);
     }
-    
+
     public function update(Request $request, Response $response, int $id): Response
     {
         $data = $request->getParsedBody();
 
-         if ($data === null) {
-            $raw = (string) $request->getBody();
+        if ($data === null) {
+            $raw = (string)$request->getBody();
             error_log("RAW: " . $raw);
             $data = json_decode($raw, true);
         }
 
-        $updatedPerson = new Person();
-        $refl = new \ReflectionClass($updatedPerson);
-        $refl->getProperty('firstName')->setValue($updatedPerson, $data['firstName']);
-        $refl->getProperty('lastName')->setValue($updatedPerson, $data['lastName']);
-
         try {
-            $result = $this->personService->updatePerson($id, $updatedPerson);
+            $result = $this->personService->updatePerson($id, $data);
             return $this->jsonResponse($response, $result);
         } catch (\Exception $e) {
             return $this->jsonResponse($response, ['error' => $e->getMessage()], 404);
@@ -85,9 +76,9 @@ class PersonController
     public function addFruit(Request $request, Response $response, int $personId): Response
     {
         $data = $request->getParsedBody();
-        if ($data==null) {
-             $raw = (string) $request->getBody();
-              error_log("RAW: " . $raw);
+        if ($data == null) {
+            $raw = (string)$request->getBody();
+            error_log("RAW: " . $raw);
             $data = json_decode($raw, true);
         }
 
@@ -102,26 +93,18 @@ class PersonController
         return $response->withHeader('Content-Type', 'application/json')->withStatus($status);
     }
 
-    public function listWithFruits(Request $request, Response $response): Response
+    public function search(Request $request, Response $response): Response
     {
-        $people = $this->personService->getAllPeopleWithFruits();
+        $queryParams = $request->getQueryParams();
+        $firstName = $queryParams['param'] ?? '';
+
+        if (empty($firstName)) {
+            return $this->jsonResponse($response, ['error' => 'Missing firstName'], 400);
+        }
+
+        $people = $this->personService->searchByFirstName($firstName);
+
         return $this->jsonResponse($response, $people);
     }
-   public function search(Request $request, Response $response): Response
-{
-    $queryParams = $request->getQueryParams();
-    $firstName = $queryParams['param'] ?? '';
-
-    if (empty($firstName)) {
-        return $this->jsonResponse($response, ['error' => 'Missing firstName'], 400);
-    }
-
-    $people = $this->personService->searchByFirstName($firstName);
-
-    return $this->jsonResponse($response, $people);
-}
-
-
-
 
 }

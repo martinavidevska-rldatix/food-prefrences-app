@@ -3,7 +3,6 @@
 namespace src\services;
 use Doctrine\ORM\EntityManagerInterface;
 use src\models\Fruit;
-use src\repository\FruitRepository;
 
 class FruitService
 {

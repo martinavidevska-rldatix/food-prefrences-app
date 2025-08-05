@@ -18,7 +18,6 @@ $container = new Container();
 // === Register Dependencies ===
 (require __DIR__ . '/src/dependencies.php')($container);
 
-// === Create Slim App ===
 AppFactory::setContainer($container);
 $app = AppFactory::create();
 
@@ -32,13 +31,13 @@ $app->get('/api/search', function (Request $request, Response $response) use ($c
 });
 // List all people
 $app->get('/api/people', function (Request $request, Response $response) use ($container) {
-     return $container->get(PersonController::class)->list($request, $response);
+    return $container->get(PersonController::class)->list($response);
 });
 
 // Get one person and their preferred fruits
 $app->get('/api/people/{id}', function (Request $request, Response $response, array $args) use ($container) {
-    $id = (int) $args['id'];
-    return $container->get(PersonController::class)->show($request, $response, $id);
+    $id = (int)$args['id'];
+    return $container->get(PersonController::class)->getPersonByIdWithFruits($response, $id);
 });
 
 // Create a new person
@@ -46,18 +45,18 @@ $app->post('/api/people', function (Request $request, Response $response) use ($
     return $container->get(PersonController::class)->create($request, $response);
 });
 //update a person
-$app->put('/api/people/{id}', function (Request $request, Response $response, array $args) use ($container){
-    $id = (int) $args['id'];
-    return $container->get(PersonController::class)->update($request,$response, $id);
+$app->put('/api/people/{id}', function (Request $request, Response $response, array $args) use ($container) {
+    $id = (int)$args['id'];
+    return $container->get(PersonController::class)->update($request, $response, $id);
 });
 
-$app->delete('/api/people/{id}', function(Request $request, Response $response, array $args) use($container){
-    $id = (int) $args['id'];
-    return $container->get(PersonController::class)->delete($request,$response, $id);
+$app->delete('/api/people/{id}', function (Request $request, Response $response, array $args) use ($container) {
+    $id = (int)$args['id'];
+    return $container->get(PersonController::class)->delete($request, $response, $id);
 });
 // Add a preferred fruit to a person
 $app->post('/api/people/{id}/fruit', function (Request $request, Response $response, array $args) use ($container) {
-    $id = (int) $args['id'];
+    $id = (int)$args['id'];
     return $container->get(PersonController::class)->addFruit($request, $response, $id);
 });
 
@@ -71,13 +70,8 @@ $app->post('/api/fruits', function (Request $request, Response $response) use ($
     return $container->get(FruitController::class)->create($request, $response);
 });
 
-// Get all people with their preferred fruits
-$app->get('/api/people-fruits', function (Request $request, Response $response) use ($container) {
-    return $container->get(PersonController::class)->listWithFruits($request, $response);
-});
-
 $app->post('/report/generate', function (Request $request, Response $response) {
-    $reportId =uniqid('report_', true);
+    $reportId = uniqid('report_', true);
 
     $publisher = new ReportPublisher();
     $publisher->publish($reportId);
@@ -88,7 +82,7 @@ $app->post('/report/generate', function (Request $request, Response $response) {
     return $response->withHeader('Content-Type', 'application/json');
 });
 $app->post('/report/generate1', function (Request $request, Response $response) {
-    $reportId =uniqid('report_', true);
+    $reportId = uniqid('report_', true);
 
     $publisher = new ReportPublisher();
     $publisher->publish($reportId);

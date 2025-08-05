@@ -50,7 +50,10 @@ return function (Container $container) {
     $container->set(PersonService::class, function ($c) {
         return new PersonService(
             $c->get(EntityManagerInterface::class),
-            $c->get(IPersonCache::class)
+            $c->get(IPersonCache::class),
+            $c->get(FruitService::class),
+            $c->get(PersonRepository::class)
+
         );
     });
 
