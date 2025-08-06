@@ -16,7 +16,6 @@ class PersonService
     private EntityManager $em;
     private IPersonCache $personCache;
     private PersonRepository $personRepository;
-    private FruitService $fruitService;
 
     public function __construct(EntityManager $em, IPersonCache $personCache, FruitService $fruitService, PersonRepository $personRepository)
     {
@@ -133,11 +132,8 @@ class PersonService
 
         $cached = $this->personCache->getPeopleByFirstName($cacheKey);
         if ($cached !== null) {
-            error_log("✅ Cache hit for: $cacheKey");
             return $cached;
         }
-
-        error_log("❌ Cache miss for: $cacheKey — querying DB.");
 
         $people = $this->personRepository->findByFirstName($name);
 
@@ -156,7 +152,6 @@ class PersonService
             ];
         }, $people);
 
-        // ✅ Store results in cache for next time
         $this->personCache->storePeopleByFirstName($cacheKey, $results);
 
         return $results;
