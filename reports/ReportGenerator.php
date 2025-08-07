@@ -9,7 +9,8 @@ class ReportGenerator
     public function __construct(PDO $pdo){
         $this->pdo = $pdo;
     }
-    public function generateReport(string $reportId){
+    public function generateReport(string $reportId): string
+    {
           $sql = "SELECT f.name AS fruit_name, CONCAT(p.firstName, ' ', p.lastName) AS person_name
                     FROM fruits f
                     LEFT JOIN people_fruits pf ON pf.fruit_id = f.id
