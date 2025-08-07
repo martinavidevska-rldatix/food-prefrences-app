@@ -27,7 +27,7 @@ class PersonServiceTest extends TestCase
         $this->fruitService = $this->createMock(FruitService::class);
         $this->personCache = $this->createMock(RedisPersonCache::class);
         $this->em = $this->createMock(EntityManager::class);
-        $this->personService = new PersonService($this->em, $this->personCache, $this->fruitService, $this->personRepository);
+        $this->personService = new PersonService($this->em, $this->personCache, $this->personRepository, $this->fruitService);
     }
 
     /**

@@ -6,24 +6,21 @@ use DI\Container;
 use Slim\Factory\AppFactory;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\Psr7\Stream;
 use src\controllers\PersonController;
 use src\controllers\FruitController;
 use reports\ReportPublisher;
 
 require __DIR__ . '/vendor/autoload.php';
 
-// === Create Container ===
 $container = new Container();
 
-// === Register Dependencies ===
 (require __DIR__ . '/src/dependencies.php')($container);
 
 AppFactory::setContainer($container);
 $app = AppFactory::create();
 
 $app->addBodyParsingMiddleware();
-
-// === Add Error Middleware (Dev Mode) ===
 $app->addErrorMiddleware(true, true, true);
 
 // === Routes ===
@@ -31,22 +28,20 @@ $app->addErrorMiddleware(true, true, true);
 $app->get('/api/search', function (Request $request, Response $response) use ($container) {
     return $container->get(PersonController::class)->search($request, $response);
 });
-// List all people
+
 $app->get('/api/people', function (Request $request, Response $response) use ($container) {
     return $container->get(PersonController::class)->list($response);
 });
 
-// Get one person and their preferred fruits
 $app->get('/api/people/{id}', function (Request $request, Response $response, array $args) use ($container) {
     $id = (int)$args['id'];
     return $container->get(PersonController::class)->getPersonByIdWithFruits($response, $id);
 });
 
-// Create a new person
 $app->post('/api/people', function (Request $request, Response $response) use ($container) {
     return $container->get(PersonController::class)->create($request, $response);
 });
-//update a person
+
 $app->put('/api/people/{id}', function (Request $request, Response $response, array $args) use ($container) {
     $id = (int)$args['id'];
     return $container->get(PersonController::class)->update($request, $response, $id);
@@ -56,18 +51,16 @@ $app->delete('/api/people/{id}', function (Request $request, Response $response,
     $id = (int)$args['id'];
     return $container->get(PersonController::class)->delete($request, $response, $id);
 });
-// Add a preferred fruit to a person
+
 $app->post('/api/people/{id}/fruit', function (Request $request, Response $response, array $args) use ($container) {
     $id = (int)$args['id'];
     return $container->get(PersonController::class)->addFruit($request, $response, $id);
 });
 
-// Optional: List fruits
 $app->get('/api/fruits', function (Request $request, Response $response) use ($container) {
     return $container->get(FruitController::class)->list($request, $response);
 });
 
-// Optional: Create fruit
 $app->post('/api/fruits', function (Request $request, Response $response) use ($container) {
     return $container->get(FruitController::class)->create($request, $response);
 });
@@ -83,18 +76,6 @@ $app->post('/report/generate', function (Request $request, Response $response) {
     $response->getBody()->write($data);
     return $response->withHeader('Content-Type', 'application/json');
 });
-$app->post('/report/generate1', function (Request $request, Response $response) {
-    $reportId = uniqid('report_', true);
-
-    $publisher = new ReportPublisher();
-    $publisher->publish($reportId);
-
-    $data = json_encode(['report_id' => $reportId]);
-
-    $response->getBody()->write($data);
-    return $response->withHeader('Content-Type', 'application/json');
-});
-
 
 //Check report status
 $app->get('/report/status', function (Request $request, Response $response) {
@@ -105,7 +86,6 @@ $app->get('/report/status', function (Request $request, Response $response) {
     return $response->withHeader('Content-Type', 'application/json');
 });
 
-// Download report
 $app->get('/report/download/{id}', function (Request $request, Response $response, array $args) {
     $reportId = $args['id'];
     $filePath = __DIR__ . "/reports/generatedReports/{$reportId}.csv";
@@ -115,7 +95,7 @@ $app->get('/report/download/{id}', function (Request $request, Response $respons
         return $response->withStatus(404);
     }
 
-    $stream = new \Slim\Psr7\Stream(fopen($filePath, 'rb'));
+    $stream = new Stream(fopen($filePath, 'rb'));
     return $response
         ->withBody($stream)
         ->withHeader('Content-Type', 'text/csv')
@@ -127,6 +107,4 @@ $app->get('/', function (Request $request, Response $response) {
     return $response->withHeader('Content-Type', 'text/html');
 });
 
-
-// // === Run App ===
 $app->run();

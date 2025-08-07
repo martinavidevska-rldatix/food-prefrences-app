@@ -20,7 +20,7 @@ return function (Container $container) {
     // === Doctrine EntityManager ===
     $container->set(EntityManagerInterface::class, function () {
         $config = ORMSetup::createAttributeMetadataConfiguration(
-            [__DIR__ . '/../src/models'], // directory containing your entity classes
+            [__DIR__ . '/../src/models'],
             true, // dev mode
         );
 
@@ -51,8 +51,8 @@ return function (Container $container) {
         return new PersonService(
             $c->get(EntityManagerInterface::class),
             $c->get(IPersonCache::class),
+            $c->get(PersonRepository::class),
             $c->get(FruitService::class),
-            $c->get(PersonRepository::class)
 
         );
     });
