@@ -141,7 +141,7 @@ function loadPeople() {
     });
 }
     function loadPeopleFruits() {
-    fetch(`${API_URL}/people-fruits`)
+    fetch(`${API_URL}/people`)
       .then(res => res.json())
       .then(data => {
         const list = document.getElementById('peopleFruitsList');

@@ -1,0 +1,11 @@
+/vendor/
+/phpunit.xml
+/phpunit/
+.phpunit.cache
+*.pem
+/tmp/
+reports/generatedReports/
+.idea/
+.vscode/
+
+

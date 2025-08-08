@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y \
     && pecl install xdebug \
     && docker-php-ext-enable xdebug
 
+RUN mkdir -p /tmp/xdebug && chmod 777 /tmp/xdebug
 # Update CA certs
 RUN update-ca-certificates
 
