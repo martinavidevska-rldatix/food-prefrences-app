@@ -1,6 +1,6 @@
 /vendor/
 /phpunit.xml
-/phpunit/
+phpunit
 .phpunit.cache
 *.pem
 /tmp/
