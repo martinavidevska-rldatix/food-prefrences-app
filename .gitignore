@@ -7,5 +7,7 @@ phpunit
 reports/generatedReports/
 .idea/
 .vscode/
+/xdebug-profiles/
+Zscaler Root CA.pem_sec.endpointdlp
 
 
